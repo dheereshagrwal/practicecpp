@@ -6,22 +6,22 @@ class Node
 public:
     T data;
     Node *next;
+    Node *prev;
 };
 
 template <class T>
 class LinkedList
 {
-
 public:
     Node<T> *first;
     LinkedList() { first = NULL; }
     LinkedList(T A[], int n);
-    ~LinkedList();
+    // ~LinkedList();
     void Display();
     void Insert(int index, T value);
     T Delete(int index);
+    void Reverse(Node<T> *p);
     int Length();
-    void Middle(Node<T> *node);
 };
 //*Constructor
 template <class T>
@@ -31,29 +31,31 @@ LinkedList<T>::LinkedList(T A[], int n)
     int i;
     first = new Node<T>;
     first->data = A[0];
-    first->next = NULL;
+    first->prev = first->next = NULL;
     last = first;
     for (i = 1; i < n; i++)
     {
         t = new Node<T>;
         t->data = A[i];
         t->next = NULL;
+        t->prev = last;
         last->next = t;
         last = t;
     }
 }
 //*Destructor
-template <class T>
-LinkedList<T>::~LinkedList()
-{
-    Node<T> *p = first;
-    while (first != NULL)
-    {
-        first = first->next;
-        delete p;
-        p = first;
-    }
-}
+// template <class T>
+// LinkedList<T>::~LinkedList()
+// {
+//     Node<T> *p = first;
+//     while (first != NULL)
+//     {
+//         first = first->next;
+//         delete p;
+//         p = first;
+//     }
+// }
+//**Display
 template <class T>
 void LinkedList<T>::Display()
 {
@@ -64,7 +66,7 @@ void LinkedList<T>::Display()
         p = p->next;
     }
 }
-
+//*Length
 template <class T>
 int LinkedList<T>::Length()
 {
@@ -77,22 +79,8 @@ int LinkedList<T>::Length()
     }
     return len;
 }
-template <class T>
-void LinkedList<T>::Middle(Node<T> *node)
-{
-    Node<T> *p, *q;
-    p = q = node;
-    while (q)
-    {
-        q = q->next;
-        if (q)
-            q = q->next;
-        if (q)
-            p = p->next;
-    }
-    cout << "Middle is " << p->data << endl;
-}
 
+//*Insert
 template <class T>
 void LinkedList<T>::Insert(int index, T value) //**Index starting from 1 and index means after which index you want to insert
 {
@@ -105,10 +93,12 @@ void LinkedList<T>::Insert(int index, T value) //**Index starting from 1 and ind
     t = new Node<T>;
     t->data = value;
     t->next = NULL;
+    t->prev = NULL;
 
     if (index == 0)
     {
         t->next = first;
+        first->prev = t;
         first = t;
     }
     else
@@ -116,13 +106,18 @@ void LinkedList<T>::Insert(int index, T value) //**Index starting from 1 and ind
         for (int i = 0; i < index - 1; i++)
             p = p->next;
         t->next = p->next;
+        t->prev = p;
+        if (p->next != NULL)
+            p->next->prev = t;
         p->next = t;
     }
 }
+
+//*Delete
 template <class T>
 T LinkedList<T>::Delete(int index)
 {
-    Node<T> *p, *q = NULL;
+    Node<T> *p = NULL;
     int x = -1;
 
     if (index < 0 || index > Length() - 1)
@@ -136,30 +131,50 @@ T LinkedList<T>::Delete(int index)
         first = first->next;
         x = p->data;
         delete p;
+        if (first)
+            first->prev = NULL;
     }
     else
     {
         p = first;
         for (int i = 0; i < index && p != NULL; i++)
         {
-            q = p;
             p = p->next;
         }
-        q->next = p->next;
+        p->prev->next = p->next;
+        if (p->next)
+            p->next->prev = p->prev;
         x = p->data;
         delete p;
     }
     return x;
 }
+template <class T>
+void LinkedList<T>::Reverse(Node<T> *p)
+{
+    p = first;
+    Node<T> *temp;
+    while (p)
+    {
+        cout << "p->next is " << p->next->data << endl;
+        swap(p->next, p->prev);
+        cout << "p->prev is " << p->prev->data << endl;
 
+        p = p->prev;
+        cout << "Now p is " << p->data << endl;
+        cout << "########" << endl;
+        if (p != NULL && p->next == NULL)
+            first = p;
+    }
+}
 int main(void)
 {
 
     float A[] = {2, 4, 6, 8, 10};
     LinkedList<float> l(A, 5);
     // cout << l.Delete(1) << endl;
-    // cout << "#######################" << endl;
-    l.Middle(l.first);
-
-    // l.Display();
+    // cout << "%%%%%%%%%%%%%%%%" << endl;
+    // l.Insert(1, 87);
+    // l.Reverse(l.first);
+    l.Display();
 }
